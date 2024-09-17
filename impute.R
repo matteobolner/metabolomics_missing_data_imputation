@@ -1,15 +1,5 @@
 #!/usr/bin/Rscript
 
-#install.packages("dplyr")
-#install.packages("tidyr")
-#install.packages("tibble")
-#install.packages("readr")
-#install.packages("tools")
-#install.packages("readxl")
-#install.packages("optparse")
-#install.packages("mice")
-
-
 #LOAD THE REQUIRED LIBRARIES
 library(mice, warn.conflicts = FALSE)
 library(readxl)
