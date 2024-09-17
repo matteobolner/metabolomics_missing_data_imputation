@@ -91,6 +91,4 @@ Both outputs are in TSV format.
 ## Notes
 
 - The default imputation method is "pmm" (Predictive Mean Matching), which is recommended for most use cases.
-- Other available methods include "rf" (Random Forest), "logreg" (Logistic Regression), "polyreg" (Polynomial Regression), and "polr" (Proportional Odds Logistic Regression).
 - The script uses a seed for reproducibility. Change the seed value to generate different imputation results.
-
