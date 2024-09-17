@@ -11,9 +11,9 @@
 
 
 #LOAD THE REQUIRED LIBRARIES
-library(mice,warn.conflicts = FALSE)
+library(mice, warn.conflicts = FALSE)
 library(readxl)
-library(dplyr,warn.conflicts = FALSE)
+library(dplyr, warn.conflicts = FALSE)
 library(tidyr)
 library(tibble)
 library(readr)
@@ -26,8 +26,7 @@ library(optparse)
 ####################################################################################
 option_list <- list(
   make_option(c("-d", "--data"), action = "store",
-              help = "Input file containing the metabolomics data in {tsv,csv,xlsx,xls} format",
-  ),
+              help = "Input file containing the metabolomics data in {tsv,csv,xlsx,xls} format",),
   make_option(
     c("-c", "--chemical_annotation"),
     action = "store",
@@ -91,12 +90,13 @@ mice_random_seed = opt$seed
 set.seed(mice_random_seed)
 method = opt$method
 additional_predictors = opt$additional_predictors
-output_path=opt$output
-imputed_only_path=opt$imputed_only
+output_path = opt$output
+imputed_only_path = opt$imputed_only
 
 if (length(additional_predictors) > 0) {
   additional_predictors = strsplit(additional_predictors, ",")[[1]]
-  additional_predictors <- unlist(lapply(additional_predictors, trimws))
+  additional_predictors <-
+    unlist(lapply(additional_predictors, trimws))
 }
 
 
@@ -225,7 +225,7 @@ pred_matrix[, colnames(pred_matrix)] <- 0
 update_pred_matrix <- function(mat, predictor_list) {
   for (row_name in rownames(mat)) {
     names_to_set <- predictor_list[[row_name]]
-    mat[row_name, ] <- ifelse(colnames(mat) %in% names_to_set, 1, 0)
+    mat[row_name,] <- ifelse(colnames(mat) %in% names_to_set, 1, 0)
   }
   return(mat)
 }
@@ -265,7 +265,8 @@ write.table(output, file = output_path, sep = '\t')
 #extract only imputed values (useful for testing)
 
 if (is.null(opt$imputed_only))
-{cat("")
+{
+  cat("")
 } else
 {
   only_imputed_values <- IMP$imp
