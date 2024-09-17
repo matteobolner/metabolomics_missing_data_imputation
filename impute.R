@@ -122,10 +122,13 @@ read_file <- function(file_path) {
 }
 
 #read main dataset
+cat("Reading data...\n\n")
 df = read_file(opt$data)
-
+cat("\n\n\n")
 #read metabolite annotation
+cat("Reading chemical annotation data...\n\n")
 metabolites = read_file(opt$chemical_annotation)
+cat("\n\n\n")
 
 
 ####################################################################################
@@ -235,6 +238,7 @@ if (length(additional_predictors) > 0) {
 }
 
 #impute missing values
+cat("Starting imputation...\n\n")
 
 IMP <-
   mice(
@@ -245,10 +249,12 @@ IMP <-
     method = method,
     seed = mice_random_seed
   )
+cat("Imputation finished! \n")
 
 ####################################################################################
 ###SAVE OUTPUT FILES
 ####################################################################################
+cat("Saving output... \n")
 
 #extract all imputed datasets
 output <-
@@ -258,9 +264,8 @@ write.table(output, file = output_path, sep = '\t')
 
 #extract only imputed values (useful for testing)
 
-opt$imputed_only = NULL
 if (is.null(opt$imputed_only))
-{
+{cat("")
 } else
 {
   only_imputed_values <- IMP$imp
@@ -269,4 +274,4 @@ if (is.null(opt$imputed_only))
   write.table(all_imputed_values, file = imputed_only_path, sep = '\t')
   
 }
-
+cat("Saved! Quitting... \n")
