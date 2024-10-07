@@ -15,6 +15,8 @@ For any question and issue contact the author Matteo Bolner.
 
 ## Prerequisites
 
+The script was tested and works on the latest R version (4.3.3); the minimum version compatilble should be 3.6.0, due to package requirements; previous versions may not work.
+
 The script requires the following R packages:
 
 - mice
@@ -26,11 +28,27 @@ The script requires the following R packages:
 - tools
 - optparse
 
-You can install these packages using the `install.packages()` function in R or simply running the `install_prerequisites.R` script available in the repository.
+You can install these packages individually using the `install.packages()` function in R or simply running the `install_prerequisites.R` script available in the repository.
 
 ```
 Rscript install_prerequisites.R 
 ```
+
+## Input File Requirements
+
+**!!** No filtering based on missing value contents is performed by this script. We recommend removing metabolites with more than 25% of missing values across samples.   
+**!!** The core of the script involves matching information between metabolite information and metabolite abundance in the samples. To do so, unique metabolite IDs (one per metabolite) are necessary, and they must be consistent between the data and the chemical annotation files (see below).
+
+1. Metabolomics Data File:
+   - Should contain metabolite measurements with samples as rows and metabolites as columns
+   - Can include additional metadata columns (e.g., sex, weight, sample ID); they will be ignored in the imputation process, unless they are explicitly set as predictors
+   - The column names for metabolite abundance columns should be named consistently with the CHEM_ID column of the chemical annotation file: the column order doesn't matter, since the script automatically extracts them from the dataset, but the names must be identical for the same metabolite
+2. Chemical Annotation File:
+   - Must contain a column named "CHEM_ID" matching the metabolite IDs in the data file
+   - Using purely numeric IDs for metabolites is not recommended, due to R's handling of numeric columns, which automatically adds an "X" before the number. You can handle this by prefixing them yourself with "X" in both the column names of the data file and in the CHEM_ID column.
+   - Must include "SUPER_PATHWAY" column for identifying xenobiotic, endogenous and unknown metabolites
+
+
 
 ## Usage
 
@@ -63,17 +81,6 @@ chmod +x impute.R
 ```
 Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 123 -m pmm -n 5 -a sex,weight
 ```
-
-## Input File Requirements
-
-1. Metabolomics Data File:
-   - Should contain metabolite measurements with samples as rows and metabolites as columns
-   - Can include additional metadata columns (e.g., sex, weight, sample ID)
-
-2. Chemical Annotation File:
-   - Must contain a column named "CHEM_ID" matching the metabolite IDs in the data file
-   - Using purely numeric IDs for metabolites is not recommended, due to R's handling of numeric columns. You can handle this by prefixing them with "X" in both the column names of the data file and in the CHEM_ID column
-   - Must include "SUPER_PATHWAY" column for identifying xenobiotics
 
 ## Output
 
