@@ -6,7 +6,7 @@ This R script performs imputation of missing values in metabolomics data using t
 For any question and issue contact the author Matteo Bolner.
 ## Summary of the process
 
-1. The script reads the input files (in various formats: CSV, TSV, XLS, XLSX) and identifies exogenous (xenobiotic) metabolites.
+1. The script reads the input files (in various formats: CSV, TSV, XLS, XLSX), removes metabolites with too many missing values, and identifies exogenous (xenobiotic) metabolites.
 2. Xenobiotic metabolites are excluded from the imputation process.
 3. Correlations between all remaining metabolites are computed.
 4. For each metabolite, the top 10 correlated **endogenous** metabolites are identified as predictors.
@@ -70,6 +70,7 @@ chmod +x impute.R
 - `-d, --data`: Input file containing the metabolomics data (required)
 - `-c, --chemical_annotation`: Input file containing the metabolite chemical annotation (required)
 - `-o, --output`: Path to the file where the imputed datasets will be saved in TSV format (required)
+- `-r, --remove_missing_over_threshold`: Percentage of missing values under which metabolites will be discarded. For example, `-r 0.3` will discard metabolites with more than 30% of values missing. Default value is 0.25.  
 - `-t, --imputed_only`: (Optional) Path to save only the imputed values (for testing purposes)
 - `-s, --seed`: Random seed for MICE imputation (default: 42)
 - `-m, --method`: Imputation method for MICE (default: "pmm")
@@ -79,7 +80,7 @@ chmod +x impute.R
 ### Example Command
 
 ```
-Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 123 -m pmm -n 5 -a sex,weight
+Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 123 -m pmm -n 5 -r 0.25 -a sex,weight 
 ```
 
 ## Output

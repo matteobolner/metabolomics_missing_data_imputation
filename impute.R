@@ -55,8 +55,14 @@ option_list <- list(
     default = NULL,
     help = "Comma-separated list of additional non-metabolite columns of the dataset to use as predictors, such as sex,weight etc",
     metavar = "col1,col2"
-  )
-  
+  ),
+  make_option(
+    c("-r", "--remove_missing_over_threshold"),
+    type = "numeric",
+    default = 0.25,
+    help = "Remove metabolites from the dataset if their percentage of missing values is above this threshold. Ranges from 0 to 1; default and recommended value is 0.25",
+    metavar = "Range from 0 to 1"
+  )  
 )
 
 opt_parser <- OptionParser(option_list = option_list)
@@ -119,6 +125,21 @@ cat("\n\n\n")
 cat("Reading chemical annotation data...\n\n")
 metabolites = read_file(opt$chemical_annotation)
 cat("\n\n\n")
+
+
+
+####################################################################################
+###REMOVE METABOLITES WITH TOO MANY MISSING VALUES
+####################################################################################
+
+
+threshold <- opt$remove_missing_over_threshold
+
+# Remove columns with more than 25% missing values
+cat("Removing metabolites with too many missing data...\n\n")
+
+df <- df %>%
+  select(where(~ mean(is.na(.)) <= threshold))
 
 ####################################################################################
 ###IDENTIFY UNNAMED AND XENOBIOTIC METABOLITES
