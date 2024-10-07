@@ -72,6 +72,7 @@ Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.
 
 2. Chemical Annotation File:
    - Must contain a column named "CHEM_ID" matching the metabolite IDs in the data file
+   - Using purely numeric IDs for metabolites is not recommended, due to R's handling of numeric columns. You can handle this by prefixing them with "X" in both the column names of the data file and in the CHEM_ID column
    - Must include "SUPER_PATHWAY" column for identifying xenobiotics
 
 ## Output

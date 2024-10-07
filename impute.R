@@ -120,7 +120,6 @@ cat("Reading chemical annotation data...\n\n")
 metabolites = read_file(opt$chemical_annotation)
 cat("\n\n\n")
 
-
 ####################################################################################
 ###IDENTIFY UNNAMED AND XENOBIOTIC METABOLITES
 ####################################################################################
@@ -196,6 +195,7 @@ top_10_correlated <-
   })
 
 names(top_10_correlated) = colnames(correlations_endogenous_only)
+
 
 ####################################################################################
 ###MICE IMPUTATION
