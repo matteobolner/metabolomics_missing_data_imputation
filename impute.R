@@ -66,8 +66,8 @@ option_list <- list(
   make_option(
     c("-u", "--remove_outliers"),
     type = "numeric",
-    default = 1.5,
-    help = "Remove outlier metabolite values from the dataset if their value is outside the interquartile range by X times, with X being the threshold set. Default and recommended value for the threshold is 1.5",
+    default = 5,
+    help = "Remove outlier metabolite values from the dataset if their value is outside the interquartile range by X times, with X being the threshold set. Default and recommended value for the threshold is 5",
     metavar = "numeric"
   ),
   make_option(
@@ -198,7 +198,7 @@ metabolite_ids = c(metabolites$CHEM_ID)
 ###REMOVE OUTLIER VALUES FROM METABOLITES
 ####################################################################################
 
-process_outliers <- function(data, column_names, threshold = 1.5) {
+process_outliers <- function(data, column_names, threshold = 5) {
   # Initialize dataframe for storing counts
   count_summary <- data.frame(
     CHEM_ID = character(),

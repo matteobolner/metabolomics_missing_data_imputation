@@ -73,7 +73,7 @@ chmod +x impute.R
 - `-c, --chemical_annotation`: Input file containing the metabolite chemical annotation (required)
 - `-o, --output`: Path to the file where the imputed datasets will be saved in TSV format (required)
 - `-r, --remove_missing_over_threshold`: Percentage of missing values under which metabolites will be discarded. For example, `-r 0.25` will discard metabolites with more than 25% of values missing. Default value is 0.25. 
-- `-u, --remove_outliers`: Threshold over which the individual metabolite values will be considered an outlier, and replaced with NA. The outlier is computed with regards to the whole column.
+- `-u, --remove_outliers`: Threshold for the interquartile range, over which the individual metabolite values will be considered an outlier, and replaced with NA. The outlier is computed with regards to the whole column. Default and recommended value is 5
 - `-l, --missing_outlier_stats`: (Optional) Path to a file where statistics about missing values and outliers per metabolite will be saved.
 - `-t, --imputed_only`: (Optional) Path to save only the imputed values (for testing purposes)
 - `-s, --seed`: Random seed for MICE imputation (default: 42)
@@ -86,7 +86,7 @@ chmod +x impute.R
 ### Example Command
 
 ```
-Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 42 -m pmm -n 5 -r 0.25 -u 1.5 -a sex,weight -l stats.tsv
+Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 42 -m pmm -n 5 -r 0.25 -u 5 -a sex,weight -l stats.tsv
 ```
 
 ## Output
