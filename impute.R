@@ -16,7 +16,7 @@ library(optparse)
 ####################################################################################
 option_list <- list(
   make_option(c("-d", "--data"), action = "store",
-              help = "Input file containing the metabolomics data in {tsv,csv,xlsx,xls} format",),
+              help = "Input file containing the metabolomics data in {tsv,csv,xlsx,xls} format", ),
   make_option(
     c("-c", "--chemical_annotation"),
     action = "store",
@@ -62,8 +62,23 @@ option_list <- list(
     default = 0.25,
     help = "Remove metabolites from the dataset if their percentage of missing values is above this threshold. Ranges from 0 to 1; default and recommended value is 0.25",
     metavar = "Range from 0 to 1"
-  )  
+  ),
+  make_option(
+    c("-u", "--remove_outliers"),
+    type = "numeric",
+    default = 1.5,
+    help = "Remove outlier metabolite values from the dataset if their value is outside the interquartile range by X times, with X being the threshold set. Default and recommended value for the threshold is 1.5",
+    metavar = "numeric"
+  ),
+  make_option(
+    c("-l", "--missing_outlier_stats"),
+    action = "store",
+    default = NULL,
+    help = "Optional: Path to save a table with statistics about missing and outlier values in the metabolites",
+  )
 )
+
+
 
 opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
@@ -135,11 +150,10 @@ cat("\n\n\n")
 
 threshold <- opt$remove_missing_over_threshold
 
-# Remove columns with more than 25% missing values
 cat("Removing metabolites with too many missing data...\n\n")
 
 df <- df %>%
-  select(where(~ mean(is.na(.)) <= threshold))
+  select(where( ~ mean(is.na(.)) <= threshold))
 
 ####################################################################################
 ###IDENTIFY UNNAMED AND XENOBIOTIC METABOLITES
@@ -178,6 +192,78 @@ metabolites <- metabolites %>%
   filter(ORIGIN != "EXOGENOUS")
 
 metabolite_ids = c(metabolites$CHEM_ID)
+
+
+####################################################################################
+###REMOVE OUTLIER VALUES FROM METABOLITES
+####################################################################################
+
+process_outliers <- function(data, column_names, threshold = 1.5) {
+  # Initialize dataframe for storing counts
+  count_summary <- data.frame(
+    CHEM_ID = character(),
+    missing_count = integer(),
+    outlier_count = integer(),
+    stringsAsFactors = FALSE
+  )
+  
+  processed_data <- data %>%
+    mutate(across(all_of(column_names), function(col) {
+      # Count missing values
+      missing_count <- sum(is.na(col))
+      
+      # Calculate statistics for non-missing values
+      non_missing <- col[!is.na(col)]
+      median_val <- median(non_missing)
+      q1 <- quantile(non_missing, 0.25)
+      q3 <- quantile(non_missing, 0.75)
+      iqr <- q3 - q1
+      cutoff_lower <- median_val - (threshold * iqr)
+      cutoff_upper <- median_val + (threshold * iqr)
+      
+      # Identify outliers
+      is_outlier <-
+        (non_missing < cutoff_lower) | (non_missing > cutoff_upper)
+      outlier_count <- sum(is_outlier)
+      
+      # Add counts to summary dataframe
+      count_summary <<- count_summary %>%
+        add_row(
+          CHEM_ID = cur_column(),
+          missing_count = missing_count,
+          outlier_count = outlier_count
+        )
+      
+      # Replace outliers with NaN
+      col[!is.na(col)] <- if_else(is_outlier, NaN, non_missing)
+      col
+    }))
+  
+  list(processed_data = processed_data,
+       count_summary = count_summary)
+}
+
+cat("Removing outlier values from the dataset...\n\n")
+
+processed_outliers <-
+  process_outliers(df, metabolite_ids, opt$remove_outliers)
+df <- processed_outliers$processed_data
+missing_outlier_summary <- processed_outliers$count_summary
+
+
+if (is.null(opt$missing_outlier_stats))
+{
+  cat("")
+} else
+{
+  write.table(
+    missing_outlier_summary,
+    file = opt$missing_outlier_stats,
+    sep = '\t',
+    row.names = FALSE
+  )
+}
+
 
 #extract metabolite data only
 metabolite_data <- df %>% select(any_of(metabolite_ids))
@@ -236,7 +322,7 @@ pred_matrix[, colnames(pred_matrix)] <- 0
 update_pred_matrix <- function(mat, predictor_list) {
   for (row_name in rownames(mat)) {
     names_to_set <- predictor_list[[row_name]]
-    mat[row_name,] <- ifelse(colnames(mat) %in% names_to_set, 1, 0)
+    mat[row_name, ] <- ifelse(colnames(mat) %in% names_to_set, 1, 0)
   }
   return(mat)
 }

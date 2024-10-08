@@ -6,12 +6,14 @@ This R script performs imputation of missing values in metabolomics data using t
 For any question and issue contact the author Matteo Bolner.
 ## Summary of the process
 
-1. The script reads the input files (in various formats: CSV, TSV, XLS, XLSX), removes metabolites with too many missing values, and identifies exogenous (xenobiotic) metabolites.
-2. Xenobiotic metabolites are excluded from the imputation process.
-3. Correlations between all remaining metabolites are computed.
-4. For each metabolite, the top 10 correlated **endogenous** metabolites are identified as predictors.
-5. A prediction matrix is created based on these correlations and any additional predictors specified.
-6. MICE imputation is performed using the specified method, generating the specified number of imputed datasets.
+1. The script reads the input files (in various formats: CSV, TSV, XLS, XLSX)
+2. Exogenous (Xenobiotic) metabolites are identified and excluded from the imputation process
+3. Metabolites with too many missing values are removed from the dataset.
+4. Individual metabolite values which are outliers (based on the interquartile range) are replaced with missing values
+4. Correlations between all metabolites are computed.
+5. For each metabolite, the top 10 correlated **endogenous** metabolites are identified as predictors.
+6. A prediction matrix is created based on these correlations and any additional predictors specified.
+7. MICE imputation is performed using the specified method, generating the specified number of imputed datasets.
 
 ## Prerequisites
 
@@ -70,17 +72,21 @@ chmod +x impute.R
 - `-d, --data`: Input file containing the metabolomics data (required)
 - `-c, --chemical_annotation`: Input file containing the metabolite chemical annotation (required)
 - `-o, --output`: Path to the file where the imputed datasets will be saved in TSV format (required)
-- `-r, --remove_missing_over_threshold`: Percentage of missing values under which metabolites will be discarded. For example, `-r 0.3` will discard metabolites with more than 30% of values missing. Default value is 0.25.  
+- `-r, --remove_missing_over_threshold`: Percentage of missing values under which metabolites will be discarded. For example, `-r 0.25` will discard metabolites with more than 25% of values missing. Default value is 0.25. 
+- `-u, --remove_outliers`: Threshold over which the individual metabolite values will be considered an outlier, and replaced with NA. The outlier is computed with regards to the whole column.
+- `-l, --missing_outlier_stats`: (Optional) Path to a file where statistics about missing values and outliers per metabolite will be saved.
 - `-t, --imputed_only`: (Optional) Path to save only the imputed values (for testing purposes)
 - `-s, --seed`: Random seed for MICE imputation (default: 42)
 - `-m, --method`: Imputation method for MICE (default: "pmm")
 - `-n, --number_imputations`: Number of imputed datasets to generate (default: 5)
 - `-a, --additional_predictors`: Comma-separated list of additional non-metabolite columns to use as predictors
 
+
+
 ### Example Command
 
 ```
-Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 123 -m pmm -n 5 -r 0.25 -a sex,weight 
+Rscript impute.R -d input_data.csv -c chemical_annotation.csv -o imputed_output.tsv -s 42 -m pmm -n 5 -r 0.25 -u 1.5 -a sex,weight -l stats.tsv
 ```
 
 ## Output
