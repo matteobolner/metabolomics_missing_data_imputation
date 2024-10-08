@@ -38,7 +38,7 @@ Rscript install_prerequisites.R
 
 ## Input File Requirements
 
-**!!** Filtering based on missing value contents is performed by this script before imputation. We recommend removing metabolites with more than 25% of missing values across samples.  
+**!!** Filtering based on missing value contents and outliers is performed by this script before imputation. We recommend removing metabolites with more than 25% of missing values across samples, and outliers over 5 times the interquartile range.  
 **!!** The core of the script involves matching information between metabolite information and metabolite abundance in the samples. To do so, unique metabolite IDs (one per metabolite) are necessary, and they must be consistent between the data and the chemical annotation files (see below).
 
 1. Metabolomics Data File:
