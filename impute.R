@@ -193,6 +193,8 @@ metabolites <- metabolites %>%
 
 metabolite_ids = c(metabolites$CHEM_ID)
 
+df <- df %>%
+  select(-exogenous_metabolites)
 
 ####################################################################################
 ###REMOVE OUTLIER VALUES FROM METABOLITES
@@ -357,7 +359,7 @@ cat("Saving output... \n")
 output <-
   complete(IMP ,  action = 'long' , include = TRUE)
 
-write.table(output, file = output_path, sep = '\t')
+write.table(output, file = output_path, sep = '\t', row.names=FALSE)
 
 #extract only imputed values (useful for testing)
 
@@ -368,8 +370,8 @@ if (is.null(opt$imputed_only))
 {
   only_imputed_values <- IMP$imp
   all_imputed_values <-
-    bind_rows(only_imputed_values, .id = "metabolite")
-  write.table(all_imputed_values, file = imputed_only_path, sep = '\t')
+    bind_rows(only_imputed_values, .id = "metabolite", sep = '\t', row.names=FALSE)
+  write.table(all_imputed_values, file = imputed_only_path, sep = '\t', row.names=FALSE)
   
 }
 cat("Saved! Quitting... \n")
