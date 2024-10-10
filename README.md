@@ -7,7 +7,7 @@ For any question and issue contact the author Matteo Bolner.
 ## Summary of the process
 
 1. The script reads the input files (in various formats: CSV, TSV, XLS, XLSX)
-2. Exogenous (Xenobiotic) metabolites are identified and excluded from the imputation process
+2. Exogenous (Xenobiotic) metabolites are identified and excluded from the dataset
 3. Metabolites with too many missing values are removed from the dataset.
 4. Individual metabolite values which are outliers (based on the interquartile range) are replaced with missing values
 4. Correlations between all metabolites are computed.
