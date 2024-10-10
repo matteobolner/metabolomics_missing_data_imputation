@@ -1,5 +1,7 @@
 # Metabolomics Data Imputation
 
+**Last update:** 10 Oct 2024 h18.15
+
 ## Overview
 
 This R script performs imputation of missing values in metabolomics data using the MICE (Multiple Imputation by Chained Equations) method. It's designed to handle metabolomics datasets in the format provided by Metabolon.  
