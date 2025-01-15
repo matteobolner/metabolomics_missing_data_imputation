@@ -75,7 +75,7 @@ option_list <- list(
     action = "store",
     default = NULL,
     help = "Optional: Path to save a table with statistics about missing and outlier values in the metabolites",
-  )
+  ),
   make_option(
     c("--metabolite_id_column"),
     type = "character",
@@ -87,7 +87,7 @@ option_list <- list(
     type = "character",
     default = "SUPER_PATHWAY",
     help = "Super pathway column name"
-  ),
+  )
 )
 
 
@@ -157,7 +157,6 @@ metabolites = read_file(opt$chemical_annotation)
 cat("\n\n\n")
 
 
-
 ####################################################################################
 ###REMOVE METABOLITES WITH TOO MANY MISSING VALUES
 ####################################################################################
@@ -173,24 +172,24 @@ df <- df %>%
 ####################################################################################
 ###IDENTIFY UNNAMED AND XENOBIOTIC METABOLITES
 ####################################################################################
-
+print("OK1")
 assign_annotation <- function(df) {
   df %>%
     mutate(
       ORIGIN = case_when(
-        is.na(.data$super_pathway_column) ~ "UNNAMED",
-        .data$super_pathway_column == "Xenobiotics" ~ "EXOGENOUS",
+        is.na(.data[[super_pathway_column]]) ~ "UNNAMED",
+        .data[[super_pathway_column]] == "Xenobiotics" ~ "EXOGENOUS",
         TRUE ~ "ENDOGENOUS"
       )
     )
 }
-
+print("OK2")
 metabolites = assign_annotation(metabolites)
 
 #drop exogenous metabolites
 
 metabolites <- metabolites %>%
-  filter(.data$metabolite_id_column %in% colnames(df))
+  filter(.data[[metabolite_id_column]] %in% colnames(df))
 
 sample_metadata <- df %>%
   select(-one_of(metabolites[[metabolite_id_column]]))
@@ -218,12 +217,12 @@ df <- df %>%
 process_outliers <- function(data, column_names, threshold = 5) {
   # Initialize dataframe for storing counts
   count_summary <- data.frame(
-    opt$metabolite_id_column = character(),
+    metabolite_id_column = character(),
     missing_count = integer(),
     outlier_count = integer(),
     stringsAsFactors = FALSE
   )
-  
+  names(count_summary)[names(count_summary) == "metabolite_id_column"] <- metabolite_id_column 
   processed_data <- data %>%
     mutate(across(all_of(column_names), function(col) {
       # Count missing values
@@ -246,7 +245,7 @@ process_outliers <- function(data, column_names, threshold = 5) {
       # Add counts to summary dataframe
       count_summary <<- count_summary %>%
         add_row(
-          opt@metabolite_id_column = cur_column(),
+          !!sym(metabolite_id_column) := cur_column(),
           missing_count = missing_count,
           outlier_count = outlier_count
         )
@@ -262,11 +261,13 @@ process_outliers <- function(data, column_names, threshold = 5) {
 
 cat("Removing outlier values from the dataset...\n\n")
 
+print("OK3")
 processed_outliers <-
   process_outliers(df, metabolite_ids, opt$remove_outliers)
 df <- processed_outliers$processed_data
 missing_outlier_summary <- processed_outliers$count_summary
 
+print("OK4")
 
 if (is.null(opt$missing_outlier_stats))
 {
