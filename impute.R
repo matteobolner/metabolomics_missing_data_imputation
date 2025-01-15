@@ -76,6 +76,18 @@ option_list <- list(
     default = NULL,
     help = "Optional: Path to save a table with statistics about missing and outlier values in the metabolites",
   )
+  make_option(
+    c("--metabolite_id_column"),
+    type = "character",
+    default = "CHEM_ID",
+    help = "Metabolite ID column name"
+  ),
+   make_option(
+    c("--super_pathway_column"),
+    type = "character",
+    default = "SUPER_PATHWAY",
+    help = "Super pathway column name"
+  ),
 )
 
 
@@ -103,6 +115,9 @@ method = opt$method
 additional_predictors = opt$additional_predictors
 output_path = opt$output
 imputed_only_path = opt$imputed_only
+
+metabolite_id_column=opt$metabolite_id_column
+super_pathway_column=opt$super_pathway_column
 
 if (length(additional_predictors) > 0) {
   additional_predictors = strsplit(additional_predictors, ",")[[1]]
@@ -163,8 +178,8 @@ assign_annotation <- function(df) {
   df %>%
     mutate(
       ORIGIN = case_when(
-        is.na(SUPER_PATHWAY) ~ "UNNAMED",
-        SUPER_PATHWAY == "Xenobiotics" ~ "EXOGENOUS",
+        is.na(.data$super_pathway_column) ~ "UNNAMED",
+        .data$super_pathway_column == "Xenobiotics" ~ "EXOGENOUS",
         TRUE ~ "ENDOGENOUS"
       )
     )
@@ -175,23 +190,23 @@ metabolites = assign_annotation(metabolites)
 #drop exogenous metabolites
 
 metabolites <- metabolites %>%
-  filter(CHEM_ID %in% colnames(df))
+  filter(.data$metabolite_id_column %in% colnames(df))
 
 sample_metadata <- df %>%
-  select(-one_of(metabolites$CHEM_ID))
+  select(-one_of(metabolites[[metabolite_id_column]]))
 
 exogenous_metabolites = metabolites %>%
   filter(ORIGIN == "EXOGENOUS") %>%
-  pull("CHEM_ID")
+  pull(metabolite_id_column)
 
 endogenous_metabolite_ids <- metabolites %>%
   filter(ORIGIN == "ENDOGENOUS") %>%
-  pull("CHEM_ID")
+  pull(metabolite_id_column)
 
 metabolites <- metabolites %>%
   filter(ORIGIN != "EXOGENOUS")
 
-metabolite_ids = c(metabolites$CHEM_ID)
+metabolite_ids = c(metabolites[[metabolite_id_column]])
 
 df <- df %>%
   select(-exogenous_metabolites)
@@ -203,7 +218,7 @@ df <- df %>%
 process_outliers <- function(data, column_names, threshold = 5) {
   # Initialize dataframe for storing counts
   count_summary <- data.frame(
-    CHEM_ID = character(),
+    opt$metabolite_id_column = character(),
     missing_count = integer(),
     outlier_count = integer(),
     stringsAsFactors = FALSE
@@ -231,7 +246,7 @@ process_outliers <- function(data, column_names, threshold = 5) {
       # Add counts to summary dataframe
       count_summary <<- count_summary %>%
         add_row(
-          CHEM_ID = cur_column(),
+          opt@metabolite_id_column = cur_column(),
           missing_count = missing_count,
           outlier_count = outlier_count
         )
@@ -279,12 +294,12 @@ metabolite_data = as.data.frame(lapply(metabolite_data, as.numeric))
 correlations <-
   cor(metabolite_data, method = 'pearson', use = 'pairwise.complete.obs')
 correlations <- as_tibble(correlations)
-correlations$CHEM_ID <- colnames(correlations)
-correlations = column_to_rownames(correlations, var = "CHEM_ID")
+correlations[[metabolite_id_column]] <- colnames(correlations)
+correlations = column_to_rownames(correlations, var = metabolite_id_column)
 correlations_endogenous_only <- correlations %>%
-  rownames_to_column(var = "CHEM_ID") %>%
-  filter(CHEM_ID %in% endogenous_metabolite_ids) %>%
-  column_to_rownames(var = "CHEM_ID")
+  rownames_to_column(var = metabolite_id_column) %>%
+  filter(.data[[metabolite_id_column]] %in% endogenous_metabolite_ids) %>%
+  column_to_rownames(var = metabolite_id_column)
 
 top_10_correlated <-
   lapply(colnames(correlations_endogenous_only), function(col) {
